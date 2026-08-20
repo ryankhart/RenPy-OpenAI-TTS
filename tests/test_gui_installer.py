@@ -67,6 +67,8 @@ class GuiInstallerTests(unittest.TestCase):
         self.assertGreater(report["runtime_file_count"], 0)
 
     def test_pyinstaller_arguments_embed_complete_runtime(self):
+        from install import RUNTIME_FILES
+
         tools_dir = os.path.join(ROOT, "tools")
         sys.path.insert(0, tools_dir)
         try:
@@ -75,12 +77,22 @@ class GuiInstallerTests(unittest.TestCase):
             sys.path.pop(0)
 
         arguments = pyinstaller_arguments(ROOT)
-        joined = "\n".join(arguments)
+        add_data_values = [
+            arguments[index + 1]
+            for index, argument in enumerate(arguments)
+            if argument == "--add-data"
+        ]
 
         self.assertIn("--onefile", arguments)
         self.assertIn("--windowed", arguments)
         self.assertIn("RenPy-OpenAI-TTS-Installer", arguments)
-        self.assertIn(os.path.join(ROOT, "game") + ";game", joined)
+        self.assertEqual(len(add_data_values), len(RUNTIME_FILES))
+        self.assertNotIn(os.path.join(ROOT, "game") + ";game", add_data_values)
+        for relative_path in RUNTIME_FILES:
+            source = os.path.join(ROOT, "game", *relative_path.split("/"))
+            relative_parent = os.path.dirname(relative_path).replace("\\", "/")
+            destination = "game" if not relative_parent else "game/" + relative_parent
+            self.assertIn(source + ";" + destination, add_data_values)
         self.assertEqual(arguments[-1], os.path.join(ROOT, "gui_installer.py"))
 
     def test_project_runtime_bundle_is_complete(self):

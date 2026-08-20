@@ -2,6 +2,13 @@ from __future__ import print_function, unicode_literals
 
 import hashlib
 import os
+import sys
+
+MODULE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if MODULE_ROOT not in sys.path:
+    sys.path.insert(0, MODULE_ROOT)
+
+from install import RUNTIME_FILES
 
 
 INSTALLER_NAME = "RenPy-OpenAI-TTS-Installer"
@@ -9,7 +16,7 @@ INSTALLER_NAME = "RenPy-OpenAI-TTS-Installer"
 
 def pyinstaller_arguments(project_root):
     project_root = os.path.abspath(project_root)
-    return [
+    arguments = [
         "--onefile",
         "--windowed",
         "--clean",
@@ -22,10 +29,14 @@ def pyinstaller_arguments(project_root):
         os.path.join(project_root, "build", "gui-installer"),
         "--specpath",
         os.path.join(project_root, "build", "gui-installer"),
-        "--add-data",
-        os.path.join(project_root, "game") + ";game",
-        os.path.join(project_root, "gui_installer.py"),
     ]
+    for relative_path in RUNTIME_FILES:
+        source = os.path.join(project_root, "game", *relative_path.split("/"))
+        relative_parent = os.path.dirname(relative_path).replace("\\", "/")
+        destination = "game" if not relative_parent else "game/" + relative_parent
+        arguments.extend(["--add-data", source + ";" + destination])
+    arguments.append(os.path.join(project_root, "gui_installer.py"))
+    return arguments
 
 
 def build_installer(project_root=None):
