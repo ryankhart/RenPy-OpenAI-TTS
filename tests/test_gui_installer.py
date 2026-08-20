@@ -23,6 +23,21 @@ class GuiInstallerTests(unittest.TestCase):
         self.assertTrue(hasattr(InstallerApp, "dry_run"))
         self.assertTrue(hasattr(InstallerApp, "install"))
 
+    def test_headless_modes_are_mutually_exclusive(self):
+        from gui_installer import build_argument_parser
+
+        parser = build_argument_parser()
+        with self.assertRaises(SystemExit):
+            parser.parse_args(
+                [
+                    "--self-test",
+                    "--install-test",
+                    "C:/Fixture",
+                    "--report",
+                    "report.json",
+                ]
+            )
+
     def test_headless_install_test_performs_real_copy(self):
         from gui_installer import run_install_test
 

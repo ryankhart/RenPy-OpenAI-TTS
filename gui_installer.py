@@ -76,8 +76,9 @@ def format_actions(actions, dry_run):
 
 def build_argument_parser():
     parser = argparse.ArgumentParser(description="Ren'Py OpenAI TTS Windows installer")
-    parser.add_argument("--self-test", action="store_true")
-    parser.add_argument("--install-test", metavar="GAME_PATH")
+    headless = parser.add_mutually_exclusive_group()
+    headless.add_argument("--self-test", action="store_true")
+    headless.add_argument("--install-test", metavar="GAME_PATH")
     parser.add_argument("--report")
     return parser
 
