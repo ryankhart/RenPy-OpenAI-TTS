@@ -12,6 +12,22 @@ This cannot work in every possible Ren'Py build. A game may disable self-voicing
 
 ## Install
 
+### Windows GUI installer
+
+Run:
+
+```text
+RenPy-OpenAI-TTS-Installer.exe
+```
+
+1. Click **Browse...** and select the folder containing the game executable, or its inner `game` folder.
+2. Click **Dry run** to preview every destination without changing files.
+3. Click **Install** and confirm the selected game.
+
+The GUI uses the same destination validation and fixed runtime manifest as the CLI. Existing `openai_tts_config.json` files are preserved. The installer executable never contains an API key.
+
+### Command-line installer
+
 1. Extract the release ZIP.
 2. Open a terminal in the extracted `RenPy-OpenAI-TTS` folder.
 3. Preview the exact changes:
@@ -124,6 +140,7 @@ Keep `openai_tts_config.json` somewhere private first if you plan to reuse its s
 python -m unittest discover -s tests -v
 python tools/check_runtime_compat.py
 python tools/build_release.py
+python tools/build_gui_installer.py
 ```
 
 The automated suite uses a fake HTTP transport and a fake Ren'Py host. It proves request construction, WAV merging, cache behavior, tested latest-only playback cases, fallback behavior, installer validation and manifest boundaries, static runtime syntax checks, and deterministic packaging without making a paid API call.
