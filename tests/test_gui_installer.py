@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import os
 import sys
+import tempfile
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,6 +17,27 @@ class GuiInstallerTests(unittest.TestCase):
 
         self.assertEqual(source_dir, os.path.join(ROOT, "game"))
         self.assertEqual(missing_runtime_files(source_dir), [])
+
+    def test_controller_dry_run_formats_plan_without_copying(self):
+        from gui_installer import format_actions, run_install_request
+
+        with tempfile.TemporaryDirectory() as game_root:
+            game_dir = os.path.join(game_root, "game")
+            os.makedirs(game_dir)
+            with open(os.path.join(game_dir, "archive.rpa"), "wb") as marker:
+                marker.write(b"fixture")
+
+            actions = run_install_request(
+                game_root,
+                dry_run=True,
+                source_dir=os.path.join(ROOT, "game"),
+            )
+            output = format_actions(actions, dry_run=True)
+
+            self.assertIn("DRY RUN", output)
+            self.assertIn("would_copy openai_tts.rpy", output)
+            self.assertIn("No files were changed.", output)
+            self.assertEqual(sorted(os.listdir(game_dir)), ["archive.rpa"])
 
 
 if __name__ == "__main__":
