@@ -2,7 +2,7 @@
 
 ## Assumptions
 
-1. The first supported target is desktop Ren'Py 7.x and 8.x, including older Python 2-based Ren'Py 7 games such as a supported Ren'Py game.
+1. The first supported target is desktop Ren'Py 7.x and 8.x, including older Python 2-based Ren'Py 7 games.
 2. Installation is per game by copying loose files into that game's `game` directory. No proprietary game files are redistributed.
 3. The existing `V` key remains owned by Ren'Py. The mod replaces Ren'Py's TTS callback, not the keymap, so built-in self-voicing navigation remains intact.
 4. One configurable OpenAI voice is used for all spoken content in version 1. Character-specific casting is a non-goal.
@@ -109,5 +109,5 @@ A deterministic ZIP is produced containing the mod, installer, example configura
 
 ## Open Questions
 
-- Which exact a supported Ren'Py game installation/version will receive the first real-game smoke test?
+- Which supported Ren'Py versions should receive additional game-level smoke tests?
 - Which OpenAI voice should be the long-term default after listening tests? Version 1 uses `coral` as a configurable starting point.
