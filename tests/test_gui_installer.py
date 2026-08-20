@@ -11,6 +11,18 @@ sys.path.insert(0, ROOT)
 
 
 class GuiInstallerTests(unittest.TestCase):
+    def test_entrypoint_exposes_headless_modes_and_gui_actions(self):
+        from gui_installer import InstallerApp, build_argument_parser
+
+        parser = build_argument_parser()
+        arguments = parser.parse_args(["--self-test", "--report", "report.json"])
+
+        self.assertTrue(arguments.self_test)
+        self.assertEqual(arguments.report, "report.json")
+        self.assertTrue(hasattr(InstallerApp, "browse"))
+        self.assertTrue(hasattr(InstallerApp, "dry_run"))
+        self.assertTrue(hasattr(InstallerApp, "install"))
+
     def test_headless_install_test_performs_real_copy(self):
         from gui_installer import run_install_test
 
