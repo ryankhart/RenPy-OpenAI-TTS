@@ -11,6 +11,31 @@ sys.path.insert(0, ROOT)
 
 
 class GuiInstallerTests(unittest.TestCase):
+    def test_headless_install_test_performs_real_copy(self):
+        from gui_installer import run_install_test
+
+        with tempfile.TemporaryDirectory() as directory:
+            game_root = os.path.join(directory, "FixtureGame")
+            game_dir = os.path.join(game_root, "game")
+            os.makedirs(game_dir)
+            with open(os.path.join(game_dir, "archive.rpa"), "wb") as marker:
+                marker.write(b"fixture")
+            report_path = os.path.join(directory, "install-test.json")
+
+            exit_code = run_install_test(
+                game_root,
+                report_path,
+                source_dir=os.path.join(ROOT, "game"),
+            )
+            with open(report_path, "r", encoding="utf-8") as report_file:
+                report = json.load(report_file)
+
+            self.assertEqual(exit_code, 0)
+            self.assertTrue(report["ok"])
+            self.assertTrue(os.path.isfile(os.path.join(game_dir, "openai_tts.rpy")))
+            self.assertTrue(os.path.isfile(os.path.join(game_dir, "openai_tts_mod", "cacert.pem")))
+            self.assertTrue(os.path.isfile(os.path.join(game_dir, "openai_tts_config.json")))
+
     def test_headless_self_test_writes_complete_bundle_report(self):
         from gui_installer import run_self_test
 

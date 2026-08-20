@@ -36,6 +36,25 @@ def run_self_test(report_path, source_dir=None):
     return 0 if report["ok"] else 1
 
 
+def run_install_test(game_path, report_path, source_dir=None):
+    try:
+        actions = run_install_request(game_path, dry_run=False, source_dir=source_dir)
+        report = {
+            "ok": True,
+            "actions": actions,
+        }
+        exit_code = 0
+    except Exception as error:
+        report = {
+            "ok": False,
+            "error": "%s: %s" % (error.__class__.__name__, error),
+        }
+        exit_code = 1
+    with open(report_path, "w", encoding="utf-8") as report_file:
+        json.dump(report, report_file, indent=2, sort_keys=True)
+    return exit_code
+
+
 def run_install_request(game_path, dry_run, source_dir=None):
     if source_dir is None:
         source_dir = bundled_runtime_dir()
