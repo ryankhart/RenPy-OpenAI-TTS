@@ -14,29 +14,26 @@ This cannot work in every possible Ren'Py build. A game may disable self-voicing
 
 ### Windows GUI installer
 
-Run:
-
-```text
-RenPy-OpenAI-TTS-Installer.exe
-```
-
-1. Click **Browse...** and select the folder containing the game executable, or its inner `game` folder.
-2. Click **Dry run** to preview every destination without changing files.
-3. Click **Install** and confirm the selected game.
+1. Download [**RenPy-OpenAI-TTS-Installer.exe**](https://github.com/ryankhart/RenPy-OpenAI-TTS/releases/latest/download/RenPy-OpenAI-TTS-Installer.exe) from the latest GitHub Release.
+2. Run `RenPy-OpenAI-TTS-Installer.exe`.
+3. Click **Browse...** and select the folder containing the game executable, or its inner `game` folder.
+4. Click **Dry run** to preview every destination without changing files.
+5. Click **Install** and confirm the selected game.
 
 The GUI uses the same destination validation and fixed runtime manifest as the CLI. Existing `openai_tts_config.json` files are preserved. The installer executable never contains an API key.
 
 ### Command-line installer
 
-1. Extract the release ZIP.
-2. Open a terminal in the extracted `RenPy-OpenAI-TTS` folder.
-3. Preview the exact changes:
+1. Open the [latest GitHub Release](https://github.com/ryankhart/RenPy-OpenAI-TTS/releases/latest) and download `RenPy-OpenAI-TTS-0.1.0.zip`.
+2. Extract the ZIP.
+3. Open a terminal in the extracted `RenPy-OpenAI-TTS` folder.
+4. Preview the exact changes:
 
 ```console
 python install.py --game-dir "C:\Path\To\Game" --dry-run
 ```
 
-4. Install after the dry run points at the correct game:
+5. Install after the dry run points at the correct game:
 
 ```console
 python install.py --game-dir "C:\Path\To\Game"
