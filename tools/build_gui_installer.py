@@ -35,6 +35,7 @@ def pyinstaller_arguments(project_root):
         relative_parent = os.path.dirname(relative_path).replace("\\", "/")
         destination = "game" if not relative_parent else "game/" + relative_parent
         arguments.extend(["--add-data", source + ";" + destination])
+    arguments.extend(["--add-data", os.path.join(project_root, "LICENSE") + ";."])
     arguments.append(os.path.join(project_root, "gui_installer.py"))
     return arguments
 

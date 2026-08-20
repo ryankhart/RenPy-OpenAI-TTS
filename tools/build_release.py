@@ -8,6 +8,7 @@ import zipfile
 
 RELEASE_FILES = [
     "README.md",
+    "LICENSE",
     "install.py",
     "game/openai_tts.rpy",
     "game/openai_tts_config.json.example",

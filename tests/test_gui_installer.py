@@ -88,6 +88,7 @@ class GuiInstallerTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertTrue(report["ok"])
         self.assertEqual(report["missing"], [])
+        self.assertTrue(report["license_present"])
         self.assertGreater(report["runtime_file_count"], 0)
 
     def test_pyinstaller_arguments_embed_complete_runtime(self):
@@ -110,8 +111,9 @@ class GuiInstallerTests(unittest.TestCase):
         self.assertIn("--onefile", arguments)
         self.assertIn("--windowed", arguments)
         self.assertIn("RenPy-OpenAI-TTS-Installer", arguments)
-        self.assertEqual(len(add_data_values), len(RUNTIME_FILES))
+        self.assertEqual(len(add_data_values), len(RUNTIME_FILES) + 1)
         self.assertNotIn(os.path.join(ROOT, "game") + ";game", add_data_values)
+        self.assertIn(os.path.join(ROOT, "LICENSE") + ";.", add_data_values)
         for relative_path in RUNTIME_FILES:
             source = os.path.join(ROOT, "game", *relative_path.split("/"))
             relative_parent = os.path.dirname(relative_path).replace("\\", "/")

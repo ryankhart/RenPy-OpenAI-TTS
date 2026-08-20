@@ -235,6 +235,8 @@ class InstallerTests(unittest.TestCase):
                 names = archive.namelist()
 
         self.assertEqual(first_bytes, second_bytes)
+        self.assertIn("RenPy-OpenAI-TTS/README.md", names)
+        self.assertIn("RenPy-OpenAI-TTS/LICENSE", names)
         self.assertIn("RenPy-OpenAI-TTS/install.py", names)
         self.assertIn("RenPy-OpenAI-TTS/game/openai_tts_config.json.example", names)
         self.assertIn("RenPy-OpenAI-TTS/game/openai_tts_mod/cacert.pem", names)

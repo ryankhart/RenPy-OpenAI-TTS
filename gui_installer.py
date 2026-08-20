@@ -27,9 +27,11 @@ def run_self_test(report_path, source_dir=None):
     if source_dir is None:
         source_dir = bundled_runtime_dir()
     missing = missing_runtime_files(source_dir)
+    license_present = os.path.isfile(os.path.join(os.path.dirname(source_dir), "LICENSE"))
     report = {
-        "ok": not missing,
+        "ok": not missing and license_present,
         "missing": missing,
+        "license_present": license_present,
         "runtime_file_count": len(RUNTIME_FILES),
     }
     with open(report_path, "w", encoding="utf-8") as report_file:
