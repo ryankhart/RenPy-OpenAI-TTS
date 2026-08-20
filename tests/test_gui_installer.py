@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import json
 import os
 import sys
 import tempfile
@@ -10,6 +11,24 @@ sys.path.insert(0, ROOT)
 
 
 class GuiInstallerTests(unittest.TestCase):
+    def test_headless_self_test_writes_complete_bundle_report(self):
+        from gui_installer import run_self_test
+
+        with tempfile.TemporaryDirectory() as directory:
+            report_path = os.path.join(directory, "self-test.json")
+
+            exit_code = run_self_test(
+                report_path,
+                source_dir=os.path.join(ROOT, "game"),
+            )
+            with open(report_path, "r", encoding="utf-8") as report_file:
+                report = json.load(report_file)
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(report["ok"])
+        self.assertEqual(report["missing"], [])
+        self.assertGreater(report["runtime_file_count"], 0)
+
     def test_project_runtime_bundle_is_complete(self):
         from gui_installer import bundled_runtime_dir, missing_runtime_files
 
