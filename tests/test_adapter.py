@@ -187,6 +187,50 @@ class InstallationTests(unittest.TestCase):
         self.assertNotIn("config.keymap", source)
         self.assertNotIn("K_v", source)
 
+    def test_install_uses_renpy_audio_music_namespace(self):
+        class Music(object):
+            def __init__(self):
+                self.registrations = []
+
+            def channel_defined(self, channel):
+                return False
+
+            def register_channel(self, channel, mixer, loop, stop_on_mute):
+                self.registrations.append((channel, mixer, loop, stop_on_mute))
+
+            def stop(self, channel):
+                pass
+
+        class Audio(object):
+            music = Music()
+
+        class Preferences(object):
+            self_voicing = True
+
+        class Game(object):
+            preferences = Preferences()
+
+        class RenPy(object):
+            audio = Audio()
+            game = Game()
+
+        class Config(object):
+            pass
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as game_dir:
+            config = Config()
+            config.gamedir = game_dir
+            config.tts_function = lambda text: None
+            adapter = self.mod.install(RenPy(), config, environ={})
+            try:
+                self.assertEqual(
+                    RenPy.audio.music.registrations,
+                    [("openai_tts", "voice", False, True)],
+                )
+            finally:
+                adapter.worker.close()
+
     def test_install_registers_voice_channel_and_replaces_only_tts_callback(self):
         install = self.mod.install
 
@@ -293,7 +337,11 @@ class LatestOnlyWorkerTests(unittest.TestCase):
         class Game(object):
             preferences = Preferences()
 
+        class Music(object):
+            pass
+
         class RenPy(object):
+            music = Music()
             game = Game()
             scheduled = []
             notices = []

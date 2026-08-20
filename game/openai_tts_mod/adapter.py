@@ -6,8 +6,21 @@ import time
 
 
 class RenPyTTSAdapter(object):
-    def __init__(self, renpy_module, worker, fallback, game_dir, channel="openai_tts"):
+    def __init__(
+        self,
+        renpy_module,
+        worker,
+        fallback,
+        game_dir,
+        channel="openai_tts",
+        music_module=None,
+    ):
         self.renpy = renpy_module
+        if music_module is None:
+            music_module = getattr(renpy_module, "music", None)
+        if music_module is None:
+            music_module = renpy_module.audio.music
+        self.music = music_module
         self.worker = worker
         self.fallback = fallback
         self.game_dir = game_dir
@@ -16,7 +29,7 @@ class RenPyTTSAdapter(object):
 
     def speak(self, text):
         mode = self.renpy.game.preferences.self_voicing
-        self.renpy.music.stop(channel=self.channel)
+        self.music.stop(channel=self.channel)
         if mode in ("clipboard", "debug"):
             self.worker.cancel()
             self.fallback(text)
@@ -46,7 +59,7 @@ class RenPyTTSAdapter(object):
         relative_path = os.path.relpath(path, self.game_dir).replace("\\", "/")
         if relative_path == ".." or relative_path.startswith("../"):
             return
-        self.renpy.music.play(relative_path, channel=self.channel, loop=False)
+        self.music.play(relative_path, channel=self.channel, loop=False)
 
 
 class LatestOnlyWorker(object):

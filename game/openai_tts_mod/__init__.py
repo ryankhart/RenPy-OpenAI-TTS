@@ -13,9 +13,13 @@ _runtime = None
 def install(renpy_module, config, environ=None, transport=None):
     global _runtime
 
+    music = getattr(renpy_module, "music", None)
+    if music is None:
+        music = renpy_module.audio.music
+
     if _runtime is not None:
         fallback = _runtime.fallback
-        renpy_module.music.stop(channel="openai_tts")
+        music.stop(channel="openai_tts")
         _runtime.worker.close()
     else:
         fallback = config.tts_function
@@ -40,7 +44,13 @@ def install(renpy_module, config, environ=None, transport=None):
     cache_dir = os.path.join(config.gamedir, "openai_tts_cache")
     service = SpeechService(client, cache_dir, max_chars=settings["max_chars"])
 
-    adapter = RenPyTTSAdapter(renpy_module, None, fallback, config.gamedir)
+    adapter = RenPyTTSAdapter(
+        renpy_module,
+        None,
+        fallback,
+        config.gamedir,
+        music_module=music,
+    )
     worker = LatestOnlyWorker(
         service.render,
         adapter.on_success,
@@ -49,8 +59,8 @@ def install(renpy_module, config, environ=None, transport=None):
     )
     adapter.worker = worker
 
-    if not renpy_module.music.channel_defined("openai_tts"):
-        renpy_module.music.register_channel(
+    if not music.channel_defined("openai_tts"):
+        music.register_channel(
             "openai_tts",
             mixer="voice",
             loop=False,
