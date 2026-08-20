@@ -74,6 +74,13 @@ def format_actions(actions, dry_run):
     return "\n".join(lines)
 
 
+def install_confirmation(game_path):
+    return (
+        "Install the OpenAI TTS mod into:\n\n%s\n\n"
+        "Existing mod files will be updated; your config is preserved."
+    ) % game_path
+
+
 def build_argument_parser():
     parser = argparse.ArgumentParser(description="Ren'Py OpenAI TTS Windows installer")
     headless = parser.add_mutually_exclusive_group()
@@ -172,7 +179,7 @@ class InstallerApp(object):
             return
         if not messagebox.askyesno(
             "Install OpenAI TTS mod?",
-            "Install the mod into this game? Existing mod files will be updated; your config is preserved.",
+            install_confirmation(path),
             parent=self.root,
         ):
             return

@@ -38,6 +38,15 @@ class GuiInstallerTests(unittest.TestCase):
                 ]
             )
 
+    def test_install_confirmation_contains_exact_selected_path(self):
+        from gui_installer import install_confirmation
+
+        selected = r"D:\Games\Example RenPy Game"
+        confirmation = install_confirmation(selected)
+
+        self.assertIn(selected, confirmation)
+        self.assertIn("config is preserved", confirmation.lower())
+
     def test_headless_install_test_performs_real_copy(self):
         from gui_installer import run_install_test
 
