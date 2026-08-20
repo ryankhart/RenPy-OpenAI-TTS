@@ -1,7 +1,7 @@
-# License options
+# License decision
 
-No license has been selected and no public repository exists.
+The project is licensed under **Apache-2.0**.
 
-Recommended default if this is published: **Apache-2.0**, because it is permissive and includes an explicit patent grant. Simpler alternative: **MIT**. File-level copyleft alternative: **MPL-2.0**.
+Ryan selected Apache-2.0 because the project is intended for free public use, modification, and redistribution. The license is permissive and includes an explicit patent grant.
 
-Do not add a license until Ryan chooses. The project license would cover this mod's code, not Ren'Py, OpenAI services, voice output rights, or any game content.
+The project license covers this mod's source code. It does not grant rights to Ren'Py, OpenAI services, generated voice output, third-party games, trademarks, or the bundled Certifi/Mozilla CA data. Third-party license text remains distributed with the applicable files.

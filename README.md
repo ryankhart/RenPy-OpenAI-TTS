@@ -153,6 +153,8 @@ Ren'Py's self-voicing system calls `config.tts_function(text)` after it extracts
 
 ## License
 
-No license has been selected for the mod's own source code. The local project is unpublished.
+Copyright 2026 Ryan Hart.
 
-The distributed `openai_tts_mod/cacert.pem` file comes from Certifi's Mozilla CA bundle. Its license text is included as `openai_tts_mod/CERTIFI_LICENSE.txt`.
+The mod's source code is licensed under the [Apache License 2.0](LICENSE). You may use, modify, and redistribute it under those terms.
+
+The distributed `openai_tts_mod/cacert.pem` file comes from Certifi's Mozilla CA bundle. Its license text is included separately as `openai_tts_mod/CERTIFI_LICENSE.txt`.
