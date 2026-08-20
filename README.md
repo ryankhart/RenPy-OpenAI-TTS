@@ -93,7 +93,7 @@ OpenAI API use is billable. Self-voicing may read menu labels and other interfac
 
 Cancellation is cooperative at chunk boundaries. A chunk already in the HTTP transport, or being handed to it at the same moment as cancellation, may still start and be billed. It will not play or trigger fallback after cancellation. A completed cancelled render may also win the final cache-promotion race, but that cache entry is content-addressed and can only be reused for the same normalized text and voice settings.
 
-Spoken text is sent to OpenAI. Do not use the mod for text you are not willing to send to the API.
+Spoken text is sent to OpenAI over HTTPS. Certificate verification uses the bundled Certifi/Mozilla CA bundle and is never disabled. Do not use the mod for text you are not willing to send to the API.
 
 The voice is AI-generated. OpenAI's speech guidance requires a clear disclosure to end users. This project is designed for the person who installed and configured the mod. If you redistribute it as part of a game, add an in-game disclosure.
 
@@ -139,4 +139,6 @@ Ren'Py's self-voicing system calls `config.tts_function(text)` after it extracts
 
 ## License
 
-No license has been selected. The local project is unpublished.
+No license has been selected for the mod's own source code. The local project is unpublished.
+
+The distributed `openai_tts_mod/cacert.pem` file comes from Certifi's Mozilla CA bundle. Its license text is included as `openai_tts_mod/CERTIFI_LICENSE.txt`.

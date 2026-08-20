@@ -365,6 +365,40 @@ class LatestOnlyWorkerTests(unittest.TestCase):
         self.assertEqual(fallback_calls, ["current text"])
         self.assertEqual(RenPy.notices, ["OpenAI TTS unavailable; using the system voice."])
 
+    def test_adapter_uses_renpy_exports_main_thread_namespace(self):
+        from openai_tts_mod.adapter import RenPyTTSAdapter
+
+        class Music(object):
+            def play(self, filename, channel, loop):
+                pass
+
+        class Worker(object):
+            def is_current(self, token):
+                return True
+
+        class Preferences(object):
+            self_voicing = True
+
+        class Game(object):
+            preferences = Preferences()
+
+        class Exports(object):
+            scheduled = []
+
+            @classmethod
+            def invoke_in_main_thread(cls, function, *args):
+                cls.scheduled.append((function, args))
+
+        class RenPy(object):
+            music = Music()
+            game = Game()
+            exports = Exports()
+
+        adapter = RenPyTTSAdapter(RenPy(), Worker(), lambda text: None, "C:/game/game")
+        adapter.on_success(1, "C:/game/game/openai_tts_cache/test.wav")
+
+        self.assertEqual(len(RenPy.exports.scheduled), 1)
+
     def test_adapter_plays_only_current_result_on_renpy_main_thread(self):
         from openai_tts_mod.adapter import RenPyTTSAdapter
 

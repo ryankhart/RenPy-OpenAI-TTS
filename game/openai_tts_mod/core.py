@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import os
+import ssl
 import tempfile
 import wave
 
@@ -21,6 +22,7 @@ except ImportError:  # pragma: no cover - exercised by Ren'Py 7/Python 2.
 
 
 SPEECH_ENDPOINT = "https://api.openai.com/v1/audio/speech"
+CA_BUNDLE_PATH = os.path.join(os.path.dirname(__file__), "cacert.pem")
 
 DEFAULT_SETTINGS = {
     "api_key": "",
@@ -258,9 +260,14 @@ class SpeechService(object):
         return target
 
 
+def _create_ssl_context(ca_bundle_path=CA_BUNDLE_PATH):
+    return ssl.create_default_context(cafile=ca_bundle_path)
+
+
 def _default_transport(url, headers, body, timeout):
     request = Request(url, data=body, headers=headers)
-    response = urlopen(request, timeout=timeout)
+    context = _create_ssl_context()
+    response = urlopen(request, timeout=timeout, context=context)
     try:
         return response.read()
     finally:

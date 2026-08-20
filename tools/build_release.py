@@ -14,6 +14,8 @@ RELEASE_FILES = [
     "game/openai_tts_mod/__init__.py",
     "game/openai_tts_mod/adapter.py",
     "game/openai_tts_mod/core.py",
+    "game/openai_tts_mod/cacert.pem",
+    "game/openai_tts_mod/CERTIFI_LICENSE.txt",
 ]
 ARCHIVE_ROOT = "RenPy-OpenAI-TTS"
 

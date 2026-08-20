@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 import wave
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "game"))
@@ -217,6 +218,15 @@ class OpenAISpeechClientTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as cache_dir:
             with self.assertRaises(ConfigurationError):
                 SpeechService(object(), cache_dir, max_chars=0)
+
+    def test_ssl_context_uses_explicit_ca_bundle(self):
+        from openai_tts_mod.core import _create_ssl_context
+
+        with mock.patch("openai_tts_mod.core.ssl.create_default_context") as create_context:
+            context = _create_ssl_context("C:/trusted/cacert.pem")
+
+        self.assertIs(context, create_context.return_value)
+        create_context.assert_called_once_with(cafile="C:/trusted/cacert.pem")
 
     def test_split_text_prefers_sentence_boundaries_and_honors_limit(self):
         from openai_tts_mod.core import split_text

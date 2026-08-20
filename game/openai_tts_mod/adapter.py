@@ -21,6 +21,11 @@ class RenPyTTSAdapter(object):
         if music_module is None:
             music_module = renpy_module.audio.music
         self.music = music_module
+        invoke_in_main_thread = getattr(renpy_module, "invoke_in_main_thread", None)
+        if invoke_in_main_thread is None:
+            exports = getattr(renpy_module, "exports", None)
+            invoke_in_main_thread = getattr(exports, "invoke_in_main_thread", None)
+        self.invoke_in_main_thread = invoke_in_main_thread
         self.worker = worker
         self.fallback = fallback
         self.game_dir = game_dir
@@ -40,10 +45,10 @@ class RenPyTTSAdapter(object):
         self.worker.submit(text)
 
     def on_success(self, token, path):
-        self.renpy.invoke_in_main_thread(self._play_if_current, token, path)
+        self.invoke_in_main_thread(self._play_if_current, token, path)
 
     def on_error(self, token, text, error):
-        self.renpy.invoke_in_main_thread(self._fallback_if_current, token, text)
+        self.invoke_in_main_thread(self._fallback_if_current, token, text)
 
     def _fallback_if_current(self, token, text):
         if not self.worker.is_current(token):

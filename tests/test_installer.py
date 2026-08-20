@@ -66,6 +66,8 @@ class InstallerTests(unittest.TestCase):
                     "openai_tts_mod/__init__.py",
                     "openai_tts_mod/adapter.py",
                     "openai_tts_mod/core.py",
+                    "openai_tts_mod/cacert.pem",
+                    "openai_tts_mod/CERTIFI_LICENSE.txt",
                     "openai_tts_config.json",
                 ],
             )
@@ -235,6 +237,8 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(first_bytes, second_bytes)
         self.assertIn("RenPy-OpenAI-TTS/install.py", names)
         self.assertIn("RenPy-OpenAI-TTS/game/openai_tts_config.json.example", names)
+        self.assertIn("RenPy-OpenAI-TTS/game/openai_tts_mod/cacert.pem", names)
+        self.assertIn("RenPy-OpenAI-TTS/game/openai_tts_mod/CERTIFI_LICENSE.txt", names)
         self.assertNotIn("RenPy-OpenAI-TTS/game/openai_tts_config.json", names)
         self.assertFalse(any("__pycache__" in name for name in names))
 

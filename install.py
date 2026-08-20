@@ -13,6 +13,8 @@ RUNTIME_FILES = [
     "openai_tts_mod/__init__.py",
     "openai_tts_mod/adapter.py",
     "openai_tts_mod/core.py",
+    "openai_tts_mod/cacert.pem",
+    "openai_tts_mod/CERTIFI_LICENSE.txt",
 ]
 
 
