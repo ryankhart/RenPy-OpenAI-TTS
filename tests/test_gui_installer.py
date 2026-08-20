@@ -66,6 +66,23 @@ class GuiInstallerTests(unittest.TestCase):
         self.assertEqual(report["missing"], [])
         self.assertGreater(report["runtime_file_count"], 0)
 
+    def test_pyinstaller_arguments_embed_complete_runtime(self):
+        tools_dir = os.path.join(ROOT, "tools")
+        sys.path.insert(0, tools_dir)
+        try:
+            from build_gui_installer import pyinstaller_arguments
+        finally:
+            sys.path.pop(0)
+
+        arguments = pyinstaller_arguments(ROOT)
+        joined = "\n".join(arguments)
+
+        self.assertIn("--onefile", arguments)
+        self.assertIn("--windowed", arguments)
+        self.assertIn("RenPy-OpenAI-TTS-Installer", arguments)
+        self.assertIn(os.path.join(ROOT, "game") + ";game", joined)
+        self.assertEqual(arguments[-1], os.path.join(ROOT, "gui_installer.py"))
+
     def test_project_runtime_bundle_is_complete(self):
         from gui_installer import bundled_runtime_dir, missing_runtime_files
 
