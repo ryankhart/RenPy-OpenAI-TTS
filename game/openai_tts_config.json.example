@@ -1,0 +1,9 @@
+{
+  "api_key": "",
+  "model": "gpt-4o-mini-tts",
+  "voice": "coral",
+  "instructions": "Speak naturally with clear, expressive narration.",
+  "timeout_seconds": 45,
+  "max_chars": 4000,
+  "debounce_seconds": 0.25
+}
