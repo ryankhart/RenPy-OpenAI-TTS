@@ -119,6 +119,38 @@ class GuiInstallerTests(unittest.TestCase):
             self.assertIn(source + ";" + destination, add_data_values)
         self.assertEqual(arguments[-1], os.path.join(ROOT, "gui_installer.py"))
 
+    def test_pyinstaller_excludes_unlisted_live_config(self):
+        from install import RUNTIME_FILES
+
+        tools_dir = os.path.join(ROOT, "tools")
+        sys.path.insert(0, tools_dir)
+        try:
+            from build_gui_installer import pyinstaller_arguments
+        finally:
+            sys.path.pop(0)
+
+        with tempfile.TemporaryDirectory() as project_root:
+            for relative_path in RUNTIME_FILES:
+                path = os.path.join(project_root, "game", *relative_path.split("/"))
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "w", encoding="utf-8") as runtime_file:
+                    runtime_file.write("allowlisted")
+            live_config = os.path.join(project_root, "game", "openai_tts_config.json")
+            with open(live_config, "w", encoding="utf-8") as config_file:
+                config_file.write('{"api_key":"credential-shaped-sentinel"}')
+            with open(os.path.join(project_root, "gui_installer.py"), "w", encoding="utf-8") as entrypoint:
+                entrypoint.write("pass")
+
+            arguments = pyinstaller_arguments(project_root)
+            add_data_sources = [
+                arguments[index + 1].split(";", 1)[0]
+                for index, argument in enumerate(arguments)
+                if argument == "--add-data"
+            ]
+
+        self.assertNotIn(live_config, add_data_sources)
+        self.assertNotIn("credential-shaped-sentinel", "\n".join(arguments))
+
     def test_project_runtime_bundle_is_complete(self):
         from gui_installer import bundled_runtime_dir, missing_runtime_files
 
