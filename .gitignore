@@ -1,0 +1,21 @@
+# Never commit credentials or per-user settings.
+openai_tts_config.json
+*.key
+.env
+
+# Generated audio/cache and build artifacts.
+openai_tts_cache/
+dist/
+build/
+*.rpa
+
+# Python and test artifacts.
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
