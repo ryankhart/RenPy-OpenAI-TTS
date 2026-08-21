@@ -16,6 +16,7 @@ RUNTIME_FILES = [
     "openai_tts_mod/cacert.pem",
     "openai_tts_mod/CERTIFI_LICENSE.txt",
 ]
+CONTROL_PANEL_FILENAME = "OpenAI TTS Control Panel.exe"
 
 
 class InstallError(Exception):
@@ -79,7 +80,7 @@ def _looks_like_renpy_game(directory):
     )
 
 
-def resolve_game_dir(path):
+def resolve_game_layout(path):
     requested = os.path.abspath(os.path.expanduser(path))
     nested = os.path.join(requested, "game")
 
@@ -88,20 +89,34 @@ def resolve_game_dir(path):
     if os.path.lexists(nested) and _is_link_or_reparse(nested):
         raise InstallError("The selected game's 'game' directory is a link or reparse point")
     if os.path.isdir(nested) and _looks_like_renpy_game(nested):
-        return nested
+        return requested, nested
 
     if os.path.isdir(requested) and _looks_like_renpy_game(requested):
-        return requested
+        if os.path.basename(requested).lower() == "game":
+            game_root = os.path.dirname(requested)
+            if _is_link_or_reparse(game_root):
+                raise InstallError("The selected game's outer directory is a link or reparse point")
+        else:
+            game_root = requested
+        return game_root, requested
 
     raise InstallError(
         "Not a Ren'Py game directory. Select the game folder or its 'game' subfolder."
     )
 
 
-def install_game(path, dry_run=False, source_dir=None):
-    game_dir = resolve_game_dir(path)
+def resolve_game_dir(path):
+    return resolve_game_layout(path)[1]
+
+
+def install_game(path, dry_run=False, source_dir=None, control_panel_source=None):
+    game_root, game_dir = resolve_game_layout(path)
     if source_dir is None:
         source_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "game")
+
+    if control_panel_source is not None:
+        if not os.path.isfile(control_panel_source) or _is_link_or_reparse(control_panel_source):
+            raise InstallError("Installer control panel is missing or is not a regular file")
 
     actions = []
     destinations = {}
@@ -115,12 +130,18 @@ def install_game(path, dry_run=False, source_dir=None):
         destinations[relative_path] = _preflight_destination(game_dir, relative_path)
 
     config_path = destinations["openai_tts_config.json"]
-    actions.append(
-        {
-            "destination": "openai_tts_config.json",
-            "status": "preserved" if os.path.exists(config_path) else "would_copy",
-        }
-    )
+    config_action = {
+        "destination": "openai_tts_config.json",
+        "status": "preserved" if os.path.exists(config_path) else "would_copy",
+    }
+    actions.append(config_action)
+
+    panel_destination = None
+    panel_action = None
+    if control_panel_source is not None:
+        panel_destination = _preflight_destination(game_root, CONTROL_PANEL_FILENAME)
+        panel_action = {"destination": CONTROL_PANEL_FILENAME, "status": "would_copy"}
+        actions.append(panel_action)
 
     if dry_run:
         return actions
@@ -139,7 +160,11 @@ def install_game(path, dry_run=False, source_dir=None):
             os.path.join(source_dir, "openai_tts_config.json.example"),
             config_path,
         )
-        actions[-1]["status"] = "copied"
+        config_action["status"] = "copied"
+
+    if control_panel_source is not None:
+        shutil.copy2(control_panel_source, panel_destination)
+        panel_action["status"] = "copied"
 
     return actions
 

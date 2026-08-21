@@ -12,6 +12,13 @@ sys.path.insert(0, ROOT)
 
 
 class InstallerTests(unittest.TestCase):
+    @staticmethod
+    def make_control_panel_source(directory):
+        path = os.path.join(directory, "bundled-control-panel.exe")
+        with open(path, "wb") as panel_file:
+            panel_file.write(b"synthetic control panel executable")
+        return path
+
     def test_cli_dry_run_prints_plan_and_returns_success(self):
         from install import main
 
@@ -93,6 +100,84 @@ class InstallerTests(unittest.TestCase):
                 self.assertEqual(file.read(), '{"voice": "onyx"}')
             self.assertTrue(os.path.isfile(os.path.join(game_dir, "openai_tts.rpy")))
             self.assertTrue(os.path.isfile(os.path.join(game_dir, "openai_tts_mod", "core.py")))
+
+    def test_install_copies_control_panel_to_outer_root_for_either_selection(self):
+        from install import CONTROL_PANEL_FILENAME, install_game
+
+        with tempfile.TemporaryDirectory() as source_directory:
+            panel_source = self.make_control_panel_source(source_directory)
+            for select_inner_game in (False, True):
+                with self.subTest(select_inner_game=select_inner_game), tempfile.TemporaryDirectory() as game_root:
+                    game_dir = os.path.join(game_root, "game")
+                    os.makedirs(game_dir)
+                    with open(os.path.join(game_dir, "script.rpyc"), "wb") as marker:
+                        marker.write(b"fixture")
+
+                    actions = install_game(
+                        game_dir if select_inner_game else game_root,
+                        control_panel_source=panel_source,
+                    )
+
+                    panel_path = os.path.join(game_root, CONTROL_PANEL_FILENAME)
+                    self.assertTrue(os.path.isfile(panel_path))
+                    self.assertFalse(os.path.exists(os.path.join(game_dir, CONTROL_PANEL_FILENAME)))
+                    with open(panel_path, "rb") as panel_file:
+                        self.assertEqual(panel_file.read(), b"synthetic control panel executable")
+                    self.assertEqual(actions[-1]["destination"], CONTROL_PANEL_FILENAME)
+                    self.assertEqual(actions[-1]["status"], "copied")
+
+    def test_control_panel_destination_is_included_in_dry_run_without_copying(self):
+        from install import CONTROL_PANEL_FILENAME, install_game
+
+        with tempfile.TemporaryDirectory() as source_directory, tempfile.TemporaryDirectory() as game_root:
+            panel_source = self.make_control_panel_source(source_directory)
+            game_dir = os.path.join(game_root, "game")
+            os.makedirs(game_dir)
+            with open(os.path.join(game_dir, "script.rpyc"), "wb") as marker:
+                marker.write(b"fixture")
+
+            actions = install_game(
+                game_root,
+                dry_run=True,
+                control_panel_source=panel_source,
+            )
+
+            self.assertEqual(actions[-1], {"destination": CONTROL_PANEL_FILENAME, "status": "would_copy"})
+            self.assertFalse(os.path.exists(os.path.join(game_root, CONTROL_PANEL_FILENAME)))
+            self.assertEqual(sorted(os.listdir(game_dir)), ["script.rpyc"])
+
+    def test_control_panel_preflight_failure_happens_before_runtime_copy(self):
+        from install import CONTROL_PANEL_FILENAME, InstallError, install_game
+
+        with tempfile.TemporaryDirectory() as source_directory, tempfile.TemporaryDirectory() as game_root:
+            panel_source = self.make_control_panel_source(source_directory)
+            game_dir = os.path.join(game_root, "game")
+            os.makedirs(game_dir)
+            with open(os.path.join(game_dir, "script.rpyc"), "wb") as marker:
+                marker.write(b"fixture")
+            os.makedirs(os.path.join(game_root, CONTROL_PANEL_FILENAME))
+
+            with self.assertRaises(InstallError):
+                install_game(game_root, control_panel_source=panel_source)
+
+            self.assertFalse(os.path.exists(os.path.join(game_dir, "openai_tts.rpy")))
+
+    def test_missing_control_panel_source_happens_before_runtime_copy(self):
+        from install import InstallError, install_game
+
+        with tempfile.TemporaryDirectory() as game_root:
+            game_dir = os.path.join(game_root, "game")
+            os.makedirs(game_dir)
+            with open(os.path.join(game_dir, "script.rpyc"), "wb") as marker:
+                marker.write(b"fixture")
+
+            with self.assertRaises(InstallError):
+                install_game(
+                    game_root,
+                    control_panel_source=os.path.join(game_root, "missing-panel.exe"),
+                )
+
+            self.assertEqual(sorted(os.listdir(game_dir)), ["script.rpyc"])
 
     def test_install_preflights_all_destinations_before_copying(self):
         from install import InstallError, install_game

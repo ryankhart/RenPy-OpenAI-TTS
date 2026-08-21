@@ -9,6 +9,7 @@ if MODULE_ROOT not in sys.path:
     sys.path.insert(0, MODULE_ROOT)
 
 from install import RUNTIME_FILES
+from build_control_panel import build_control_panel
 
 
 INSTALLER_NAME = "RenPy-OpenAI-TTS-Installer"
@@ -36,6 +37,12 @@ def pyinstaller_arguments(project_root):
         destination = "game" if not relative_parent else "game/" + relative_parent
         arguments.extend(["--add-data", source + ";" + destination])
     arguments.extend(["--add-data", os.path.join(project_root, "LICENSE") + ";."])
+    arguments.extend(
+        [
+            "--add-binary",
+            os.path.join(project_root, "dist", "OpenAI TTS Control Panel.exe") + ";.",
+        ]
+    )
     arguments.append(os.path.join(project_root, "gui_installer.py"))
     return arguments
 
@@ -45,6 +52,7 @@ def build_installer(project_root=None):
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     from PyInstaller.__main__ import run
 
+    build_control_panel(project_root)
     run(pyinstaller_arguments(project_root))
     output = os.path.join(project_root, "dist", INSTALLER_NAME + ".exe")
     if not os.path.isfile(output):

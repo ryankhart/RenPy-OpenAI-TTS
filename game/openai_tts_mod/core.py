@@ -29,6 +29,7 @@ DEFAULT_SETTINGS = {
     "model": "gpt-4o-mini-tts",
     "voice": "coral",
     "instructions": "Speak naturally with clear, expressive narration.",
+    "speed": 1.0,
     "timeout_seconds": 45,
     "max_chars": 4000,
     "debounce_seconds": 0.25,
@@ -81,12 +82,15 @@ def load_settings(config_path, environ=None):
     timeout = settings["timeout_seconds"]
     max_chars = settings["max_chars"]
     debounce = settings["debounce_seconds"]
+    speed = settings["speed"]
     if not _valid_number(timeout) or not 1 <= timeout <= 120:
         raise ConfigurationError("timeout_seconds must be between 1 and 120")
     if not isinstance(max_chars, int) or isinstance(max_chars, bool) or not 1 <= max_chars <= 4000:
         raise ConfigurationError("max_chars must be an integer between 1 and 4000")
     if not _valid_number(debounce) or not 0 <= debounce <= 2:
         raise ConfigurationError("debounce_seconds must be between 0 and 2")
+    if not _valid_number(speed) or not 0.25 <= speed <= 4.0:
+        raise ConfigurationError("speed must be between 0.25 and 4.0")
 
     return settings
 
@@ -175,10 +179,11 @@ def _valid_wav_file(path):
 
 def _cache_digest(client, text, max_chars):
     identity = {
-        "schema": 1,
+        "schema": 2,
         "model": client.model,
         "voice": client.voice,
         "instructions": client.instructions,
+        "speed": getattr(client, "speed", 1.0),
         "response_format": "wav",
         "max_chars": max_chars,
         "text": text,
@@ -275,11 +280,12 @@ def _default_transport(url, headers, body, timeout):
 
 
 class OpenAISpeechClient(object):
-    def __init__(self, api_key, model, voice, instructions, timeout=45, transport=None):
+    def __init__(self, api_key, model, voice, instructions, timeout=45, transport=None, speed=1.0):
         self.api_key = api_key
         self.model = model
         self.voice = voice
         self.instructions = instructions
+        self.speed = speed
         self.timeout = timeout
         self.transport = transport or _default_transport
 
@@ -292,6 +298,7 @@ class OpenAISpeechClient(object):
             "voice": self.voice,
             "input": text,
             "instructions": self.instructions,
+            "speed": self.speed,
             "response_format": "wav",
         }
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")

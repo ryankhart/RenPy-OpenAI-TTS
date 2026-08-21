@@ -50,7 +50,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Build the deterministic Ren'Py OpenAI TTS ZIP.")
     parser.add_argument(
         "--output",
-        default=os.path.join("dist", "RenPy-OpenAI-TTS-0.1.0.zip"),
+        default=os.path.join("dist", "RenPy-OpenAI-TTS-0.2.0.zip"),
     )
     arguments = parser.parse_args(argv)
     digest = build_release(arguments.output)

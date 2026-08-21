@@ -8,7 +8,7 @@ The runtime uses Python's standard library. It does not require the OpenAI Pytho
 
 The first release targets desktop games built with Ren'Py 7.x or 8.x. The runtime is written without known Python 3-only constructs, but the automated checker is a limited static syntax guard. This release has not yet been executed inside a Python 2-based Ren'Py 7 game.
 
-This cannot work in every possible Ren'Py build. A game may disable self-voicing, reject loose `.rpy` files, sign its scripts, or replace `config.tts_function` after this mod loads. Android, iOS, and Ren'Py Web are not supported in version 0.1.0.
+This cannot work in every possible Ren'Py build. A game may disable self-voicing, reject loose `.rpy` files, sign its scripts, or replace `config.tts_function` after this mod loads. Android, iOS, and Ren'Py Web are not supported in version 0.2.0.
 
 ## Install
 
@@ -18,13 +18,14 @@ This cannot work in every possible Ren'Py build. A game may disable self-voicing
 2. Run `RenPy-OpenAI-TTS-Installer.exe`.
 3. Click **Browse...** and select the folder containing the game executable, or its inner `game` folder.
 4. Click **Dry run** to preview every destination without changing files.
-5. Click **Install** and confirm the selected game.
+5. Leave **Launch TTS Control Panel after installation** selected unless you do not want it to open immediately.
+6. Click **Install** and confirm the selected game.
 
-The GUI uses the same destination validation and fixed runtime manifest as the CLI. Existing `openai_tts_config.json` files are preserved. The installer executable never contains an API key.
+The single installer contains both the Ren'Py runtime and a separate control-panel executable. It installs `OpenAI TTS Control Panel.exe` beside the selected game's executable and installs the runtime under the inner `game` folder. The GUI uses the same destination validation and fixed runtime manifest as the CLI. Existing `openai_tts_config.json` files are preserved. The installer executable never contains an API key.
 
 ### Command-line installer
 
-1. Open the [latest GitHub Release](https://github.com/ryankhart/RenPy-OpenAI-TTS/releases/latest) and download `RenPy-OpenAI-TTS-0.1.0.zip`.
+1. Open the [latest GitHub Release](https://github.com/ryankhart/RenPy-OpenAI-TTS/releases/latest) and download `RenPy-OpenAI-TTS-0.2.0.zip`.
 2. Extract the ZIP.
 3. Open a terminal in the extracted `RenPy-OpenAI-TTS` folder.
 4. Preview the exact changes:
@@ -40,6 +41,18 @@ python install.py --game-dir "C:\Path\To\Game"
 ```
 
 You may pass either the folder containing the game executable or its inner `game` folder. The installer requires an existing `.rpa`, `.rpy`, or `.rpyc` file before it will write anything. It copies only this mod's files. An existing `openai_tts_config.json` is preserved.
+
+## TTS Control Panel
+
+Run this file from the installed game's outer folder:
+
+```text
+<Game>\OpenAI TTS Control Panel.exe
+```
+
+The panel changes that game's built-in OpenAI voice, speaking speed, and voice instructions. Speed accepts `0.25` through `4.0`, where `1.0` is normal. Saving preserves the API key and advanced or future configuration fields that the panel does not display.
+
+Saved changes apply the next time the game starts. The first version does not reload settings inside an already running game.
 
 ## Add your OpenAI API key
 
@@ -63,6 +76,7 @@ Put your key between the quotes:
   "model": "gpt-4o-mini-tts",
   "voice": "coral",
   "instructions": "Speak naturally with clear, expressive narration.",
+  "speed": 1.0,
   "timeout_seconds": 45,
   "max_chars": 4000,
   "debounce_seconds": 0.25
@@ -94,11 +108,12 @@ Ren'Py's other accessibility modes still use the stock backend:
 | `model` | `gpt-4o-mini-tts` | OpenAI speech model |
 | `voice` | `coral` | OpenAI built-in voice |
 | `instructions` | natural, expressive narration | Voice style prompt |
+| `speed` | `1.0` | Native speech speed, allowed range 0.25 to 4.0 |
 | `timeout_seconds` | `45` | Network timeout, allowed range 1 to 120 |
 | `max_chars` | `4000` | Maximum characters per API request, allowed range 1 to 4000 |
 | `debounce_seconds` | `0.25` | Wait before sending rapidly changing focus text, allowed range 0 to 2 |
 
-Cache keys use whitespace-normalized text. Changes only to spacing may reuse the same entry; changes to spoken text, model, voice, instructions, or chunk size create a different entry.
+Cache keys use whitespace-normalized text. Changes only to spacing may reuse the same entry; changes to spoken text, model, voice, instructions, speed, or chunk size create a different entry.
 
 ## Cost, privacy, and disclosure
 
@@ -131,16 +146,19 @@ openai_tts_cache\
 
 Keep `openai_tts_config.json` somewhere private first if you plan to reuse its settings.
 
+Also delete `<Game>\OpenAI TTS Control Panel.exe` from the outer game folder.
+
 ## Verify the source
 
 ```console
 python -m unittest discover -s tests -v
 python tools/check_runtime_compat.py
 python tools/build_release.py
+python tools/build_control_panel.py
 python tools/build_gui_installer.py
 ```
 
-The automated suite uses a fake HTTP transport and a fake Ren'Py host. It proves request construction, WAV merging, cache behavior, tested latest-only playback cases, fallback behavior, installer validation and manifest boundaries, static runtime syntax checks, and deterministic packaging without making a paid API call.
+The automated suite uses a fake HTTP transport and a fake Ren'Py host. It proves request construction, native speed handling, WAV merging, cache behavior, tested latest-only playback cases, fallback behavior, atomic control-panel saves, installer validation and manifest boundaries, static runtime syntax checks, and deterministic packaging without making a paid API call.
 
 A final real-game smoke test still requires a game path, a locally configured API key, and approval for a paid synthesis request.
 

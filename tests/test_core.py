@@ -48,6 +48,20 @@ class OpenAISpeechClientTests(unittest.TestCase):
         self.assertEqual(settings["instructions"], "Read dramatically.")
         self.assertEqual(settings["timeout_seconds"], 22)
         self.assertEqual(settings["max_chars"], 4000)
+        self.assertEqual(settings["speed"], 1.0)
+
+    def test_load_settings_accepts_speed_boundaries(self):
+        from openai_tts_mod.core import load_settings
+
+        for speed in (0.25, 1, 4.0):
+            with self.subTest(speed=speed), tempfile.TemporaryDirectory() as directory:
+                path = os.path.join(directory, "openai_tts_config.json")
+                with open(path, "w", encoding="utf-8") as config_file:
+                    json.dump({"speed": speed}, config_file)
+
+                settings = load_settings(path, {})
+
+                self.assertEqual(settings["speed"], speed)
 
     def test_load_settings_normalizes_invalid_json_as_configuration_error(self):
         from openai_tts_mod.core import ConfigurationError, load_settings
@@ -89,6 +103,12 @@ class OpenAISpeechClientTests(unittest.TestCase):
             {"max_chars": 0},
             {"max_chars": 4001},
             {"debounce_seconds": -1},
+            {"speed": True},
+            {"speed": "fast"},
+            {"speed": 0.24},
+            {"speed": 4.01},
+            {"speed": float("inf")},
+            {"speed": float("nan")},
         ]
 
         for config in invalid_settings:
@@ -212,6 +232,34 @@ class OpenAISpeechClientTests(unittest.TestCase):
             self.assertEqual(first, second)
             self.assertEqual(client.calls, ["Cache me"])
 
+    def test_render_uses_separate_cache_entries_for_different_speeds(self):
+        from openai_tts_mod.core import SpeechService
+
+        class FakeClient(object):
+            model = "model"
+            voice = "voice"
+            instructions = "instructions"
+
+            def __init__(self, speed, audio):
+                self.speed = speed
+                self.audio = audio
+                self.calls = []
+
+            def synthesize(self, text):
+                self.calls.append(text)
+                return self.audio
+
+        with tempfile.TemporaryDirectory() as cache_dir:
+            normal = FakeClient(1.0, self.make_wav(b"A"))
+            faster = FakeClient(1.25, self.make_wav(b"B"))
+
+            normal_path = SpeechService(normal, cache_dir).render("Cache by speed")
+            faster_path = SpeechService(faster, cache_dir).render("Cache by speed")
+
+            self.assertNotEqual(normal_path, faster_path)
+            self.assertEqual(normal.calls, ["Cache by speed"])
+            self.assertEqual(faster.calls, ["Cache by speed"])
+
     def test_service_rejects_non_positive_max_chars(self):
         from openai_tts_mod.core import ConfigurationError, SpeechService
 
@@ -251,6 +299,7 @@ class OpenAISpeechClientTests(unittest.TestCase):
             model="gpt-4o-mini-tts",
             voice="coral",
             instructions="Speak naturally.",
+            speed=1.25,
             timeout=12,
             transport=transport,
         )
@@ -271,6 +320,7 @@ class OpenAISpeechClientTests(unittest.TestCase):
                 "voice": "coral",
                 "input": "Hello, Rowan.",
                 "instructions": "Speak naturally.",
+                "speed": 1.25,
                 "response_format": "wav",
             },
         )

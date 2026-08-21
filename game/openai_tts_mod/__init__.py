@@ -40,6 +40,7 @@ def install(renpy_module, config, environ=None, transport=None):
         settings["instructions"],
         timeout=settings["timeout_seconds"],
         transport=transport,
+        speed=settings["speed"],
     )
     cache_dir = os.path.join(config.gamedir, "openai_tts_cache")
     service = SpeechService(client, cache_dir, max_chars=settings["max_chars"])
